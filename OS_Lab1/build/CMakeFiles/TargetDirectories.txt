@@ -1,6 +1,0 @@
-D:/Prog/C++/OS_Lab1/build/CMakeFiles/main.dir
-D:/Prog/C++/OS_Lab1/build/CMakeFiles/creator.dir
-D:/Prog/C++/OS_Lab1/build/CMakeFiles/reporter.dir
-D:/Prog/C++/OS_Lab1/build/CMakeFiles/RUN_TESTS.dir
-D:/Prog/C++/OS_Lab1/build/CMakeFiles/ALL_BUILD.dir
-D:/Prog/C++/OS_Lab1/build/CMakeFiles/ZERO_CHECK.dir

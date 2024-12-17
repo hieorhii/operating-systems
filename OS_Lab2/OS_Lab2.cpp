@@ -1,76 +1,88 @@
-﻿#include <windows.h>
-#include <iostream>
+﻿#include <iostream>
 #include <vector>
-#include <algorithm>
-#include <numeric>
+#include <windows.h>
+#include <limits>
 
 using namespace std;
 
-vector<int> numbers;
-int minElement, maxElement;
-double averageValue;
+struct MinMax {
+    int min;
+    int max;
+};
 
-DWORD WINAPI min_max(LPVOID lpParam) {
-    minElement = numbers[0];
-    maxElement = numbers[0];
+double averageValue = 0;
+HANDLE hMinMax;
+HANDLE hAverage;
+MinMax minMax;
 
-    for (int num : numbers) {
-        if (num < minElement) {
-            minElement = num;
+DWORD WINAPI findMinMax(LPVOID lpParam) {
+    std::vector<int>* numbers = static_cast<std::vector<int>*>(lpParam);
+    minMax.min = INT_MAX;
+    minMax.max = INT_MIN;
+
+    for (size_t i = 0; i < numbers->size(); ++i) {
+        if ((*numbers)[i] < minMax.min) {
+            minMax.min = (*numbers)[i];
         }
-        if (num > maxElement) {
-            maxElement = num;
+        if ((*numbers)[i] > minMax.max) {
+            minMax.max = (*numbers)[i];
         }
         Sleep(7);
     }
 
-    cout << "Минимальный элемент: " << minElement << endl;
-    cout << "Максимальный элемент: " << maxElement << endl;
+    std::cout << "Min: " << minMax.min << ", Max: " << minMax.max << std::endl;
     return 0;
 }
 
-DWORD WINAPI average(LPVOID lpParam) {
+DWORD WINAPI calculateAverage(LPVOID lpParam) {
+    std::vector<int>* numbers = static_cast<std::vector<int>*>(lpParam);
     int sum = 0;
 
-    for (int num : numbers) {
-        sum += num;
+    for (size_t i = 0; i < numbers->size(); ++i) {
+        sum += (*numbers)[i];
         Sleep(12);
     }
 
-    averageValue = static_cast<double>(sum) / numbers.size();
-    cout << "Среднее значение: " << averageValue << endl;
+    averageValue = static_cast<double>(sum) / numbers->size();
+    std::cout << "Average: " << averageValue << std::endl;
     return 0;
 }
 
 int main() {
-    setlocale(LC_ALL, "Rus");
-    int n;
-    cout << "Введите размер массива: ";
-    cin >> n;
+    std::vector<int> numbers;
+    int size;
 
-    numbers.resize(n);
-    cout << "Введите элементы массива: ";
-    for (int i = 0; i < n; i++) {
-        cin >> numbers[i];
+    std::cout << "Enter the size of the array: ";
+    std::cin >> size;
+
+    std::cout << "Enter the elements of the array: ";
+    for (int i = 0; i < size; ++i) {
+        int num;
+        std::cin >> num;
+        numbers.push_back(num);
     }
 
-    HANDLE hMinMax = CreateThread(NULL, 0, min_max, NULL, 0, NULL);
-    HANDLE hAverage = CreateThread(NULL, 0, average, NULL, 0, NULL);
+    hMinMax = CreateThread(NULL, 0, findMinMax, &numbers, 0, NULL);
+    hAverage = CreateThread(NULL, 0, calculateAverage, &numbers, 0, NULL);
 
     WaitForSingleObject(hMinMax, INFINITE);
     WaitForSingleObject(hAverage, INFINITE);
 
-    replace(numbers.begin(), numbers.end(), minElement, static_cast<int>(averageValue));
-    replace(numbers.begin(), numbers.end(), maxElement, static_cast<int>(averageValue));
-
-    cout << "Обновленный массив: ";
-    for (int num : numbers) {
-        cout << num << " ";
-    }
-    cout << endl;
-
     CloseHandle(hMinMax);
     CloseHandle(hAverage);
+
+    for (size_t i = 0; i < numbers.size(); ++i) {
+        if (numbers[i] == minMax.min || numbers[i] == minMax.max) {
+
+            numbers[i] = static_cast<int>(averageValue);
+        }
+    }
+
+    std::cout << "Modified array: ";
+    for (size_t i = 0; i < numbers.size(); ++i) {
+        std::cout << numbers[i] << " ";
+    }
+    std::cout << std::endl;
 
     return 0;
 }
